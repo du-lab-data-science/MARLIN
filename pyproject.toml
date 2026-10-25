@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marlin-ms"
+version = "1.0.0"
+description = "MARLIN: de novo molecular structure elucidation from tandem mass spectra without a ground-truth formula"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Xujun Che" },
+  { name = "Xiuxia Du" },
+  { name = "Depeng Xu" },
+]
+# Dependencies are pinned in requirements-lock.txt (install with `pip install -e . --no-deps`).
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["marlin*", "dlm*", "mist*"]
+
+[tool.setuptools.package-data]
+marlin = ["configs/*.yaml"]

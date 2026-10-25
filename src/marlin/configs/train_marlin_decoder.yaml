@@ -1,0 +1,117 @@
+# Training config of the released decoder (weights/marlin_decoder.ckpt is step 1,930,000 of this run).
+# SAFE-GPT molecules with RDKit-computed conditioning; molecules in the NPLIB1 / MassSpecGym val and test
+# splits are excluded. Warm-started from FRIGID's decoder (weights/frigid/DLM.ckpt).
+#
+#   python -m marlin.train --config-name train_marlin_decoder
+# Paths resolve against the launch directory.
+
+hydra:
+  run:
+    dir: train_results/marlin_decoder
+  job:
+    chdir: True
+
+data:
+  use_safe_hf: True
+  hf_cache_dir: null          # null = default Hugging Face cache ($HF_HOME / $HF_HUB_CACHE)
+  exclude_inchikeys_file: ${hydra:runtime.cwd}/data/marlin/exclude_inchikeys_valtest.csv
+  remove_stereo: True
+  # fingerprint corruption: half of the samples drop and add a U[0.1, 0.3] fraction of bits
+  fingerprint_noise_prob: 0.5
+  fingerprint_noise_level: [0.10, 0.30]
+
+wandb:
+  project: marlin
+  name: null                  # set a run name to enable Weights & Biases logging
+
+init_from_dlm: ${hydra:runtime.cwd}/weights/frigid/DLM.ckpt
+load_weights_only: null
+load_weights_strict: False
+
+loader:
+  global_batch_size: 256
+  batch_size: ${div_up:${.global_batch_size}, ${eval:${trainer.devices} * ${trainer.num_nodes}}}
+  num_workers: 28
+  pin_memory: True
+  resume_step: null
+
+optim:
+  weight_decay: 0
+  lr: 5e-5
+  beta1: 0.9
+  beta2: 0.999
+  eps: 1e-8
+
+trainer:
+  _target_: lightning.Trainer
+  accelerator: cuda
+  num_nodes: 1
+  devices: ${device_count:}
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  precision: 'bf16'
+  max_steps: -1              # -1 = no limit (the released checkpoint is step 1,930,000)
+  log_every_n_steps: 1000
+
+model:
+  attention_probs_dropout_prob: 0.1
+  hidden_act: 'gelu'
+  hidden_dropout_prob: 0.1
+  hidden_size: 896
+  initializer_range: 0.02
+  intermediate_size: 3584
+  layer_norm_eps: 1e-12
+  max_position_embeddings: 256
+  model_type: 'bert'
+  num_attention_heads: 14
+  num_hidden_layers: 12
+  pad_token_id: 3
+  position_embedding_type: 'absolute'
+  torch_dtype: 'float32'
+  type_vocab_size: 2
+  use_cache: True
+  vocab_size: 1880
+
+  block_size: 8
+
+  use_mass_conditioning: True
+  use_isotope_conditioning: True
+  use_fingerprint_conditioning: True
+
+  mass_num_bands: 32
+  mass_min: 0.0
+  mass_max: 2000.0
+  mass_hidden_dim: 256
+  mass_dropout_prob: 0.1
+
+  isotope_hidden_dim: 64
+  isotope_dropout_prob: 0.1
+
+  fingerprint_bits: 4096
+  fingerprint_radius: 2
+  fingerprint_seq_max_len: 256
+  fingerprint_num_self_attention_layers: 3
+  fingerprint_activation_threshold: 0.0
+  fingerprint_dropout_prob: 0.25
+
+  lr_scheduler:
+    _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: 150000
+    eta_min: 1e-8
+    warmup_steps: 10000
+
+training:
+  block_scheme: two_stream
+  freeze_mode: none
+  ema: 0.9999
+  antithetic_sampling: True
+  sampling_eps: 1e-3
+
+callback:
+  _target_: lightning.pytorch.callbacks.ModelCheckpoint
+  dirpath: ${cwd:}/checkpoints
+  filename: '{step}'
+  save_top_k: -1
+  auto_insert_metric_name: False
+  enable_version_counter: False
+  every_n_train_steps: 5000

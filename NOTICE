@@ -1,0 +1,24 @@
+MARLIN
+Copyright 2026 Xujun Che, Xiuxia Du, Depeng Xu
+
+This product includes software developed by others:
+
+* src/dlm and src/mist contain the parts of FRIGID's dlm and mist packages (Bohde, Liu, Manjrekar,
+  Lederbauer, Ji, Wang, Coley; https://arxiv.org/abs/2604.16648; Apache License 2.0) that MARLIN uses:
+  the BERT cross-attention backbone and fingerprint set encoder, tokenizer and chemistry helpers, EMA and
+  checkpoint utilities, and the MIST spectrum encoder with its data loading. Modules and functions MARLIN
+  does not use were removed; the remaining code is unchanged apart from removed definitions and imports.
+  mist/subformulae/assign_subformulae.py is MIST's subformula assignment script.
+* FRIGID's dlm package is adapted from NVIDIA GenMol (https://github.com/NVIDIA-Digital-Bio/genmol,
+  Apache License 2.0) and includes code from SAFE and FlashAttention; MARLIN's masked-diffusion components
+  follow MDLM. Their licenses are in third_party_licenses/.
+* FRIGID's mist package is adapted from MIST (https://github.com/samgoldman97/mist), MIT License,
+  Copyright (c) 2022 Samuel Goldman; see third_party_licenses/LICENSE_MIST.
+* src/marlin/dreams_adapter.py loads DreaMS (https://github.com/pluskal-lab/DreaMS), MIT License,
+  Copyright (c) 2024 Roman Bushuiev. DreaMS itself is installed separately and not redistributed.
+
+Model weights and data files distributed with MARLIN are licensed under CC BY-NC 4.0. The MARLIN
+decoder checkpoints are fine-tuned from the FRIGID decoder checkpoint (CC BY-NC 4.0,
+https://zenodo.org/records/19685145). The DreaMS fingerprint encoder is fine-tuned from the
+DreaMS weights (CC BY 4.0, https://zenodo.org/records/10997887). NPLIB1 is distributed by MIST
+(https://zenodo.org/record/8316682) and is not redistributed here.

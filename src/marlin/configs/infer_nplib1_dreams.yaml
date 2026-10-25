@@ -1,0 +1,55 @@
+# MARLIN with the fine-tuned DreaMS encoder on the NPLIB1 test split; no formula is used anywhere.
+#
+#   python -m marlin.infer --config src/marlin/configs/infer_nplib1_dreams.yaml --output-dir results/marlin_dreams
+# Ablations: --no-mass-shell-prune ; --no-mass-conditioning --no-mass-shell-prune ; --fp-diversity 0.0
+
+data:
+  datadir: data/canopus
+  labels_file: data/canopus/labels.tsv
+  split_file: data/canopus/splits/canopus_hplus_100_0.tsv
+  spec_folder: data/canopus/spec_files
+  # read by the shared data loader; the DreaMS encoder ignores it
+  subform_folder: data/canopus/subformulae/subformulae_default
+
+encoder:
+  type: dreams
+  embeddings: data/marlin/dreams_embeddings_nplib1.npz
+  head_checkpoint: weights/dreams_fp/head.pt
+  # fp_threshold: 0.30      # default: the threshold stored with the head
+
+# featurizer settings of the shared data loader (the MIST model is not loaded)
+mist_encoder:
+  magma_modulo: 512
+  cls_type: "ms1"
+  inten_transform: "float"
+  inten_prob: 0.1
+  remove_prob: 0.5
+
+msbd3_checkpoint: weights/marlin_decoder.ckpt   # the MARLIN block-diffusion decoder
+
+fingerprint:
+  bits: 4096
+  radius: 2
+  threshold: 0.187          # unused by the DreaMS encoder
+
+inference:
+  split: "test"
+  max_spectra: null
+  num_candidates: 384       # decodes per spectrum
+  ppm_tol: 10.0             # mass acceptance tolerance (tau)
+  mass_source: "true_mass"  # exact mass of the reference structure; "precursor" (+ adduct) for new spectra
+  adduct: "[M+H]+"
+  use_isotope: false
+  isotope_source: measured
+  enable_mass_shell_prune: true
+  h_slack: 4.0
+  use_kv_cache: true
+  fp_diversity: 1.0         # every candidate decodes from its own perturbed fingerprint
+  fp_drop_rate: 0.3         # fraction of on-bits dropped per perturbation
+  softmax_temp: 1.0
+  top_k: 10
+
+trace_every: 200
+
+output:
+  results_dir: "results/marlin_dreams"

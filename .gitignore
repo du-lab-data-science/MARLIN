@@ -1,0 +1,16 @@
+# large files: published on Zenodo, fetched by scripts/download_weights.sh
+weights/**/*.ckpt
+weights/**/*.pt
+data/marlin/dreams_embeddings_nplib1.npz
+data/marlin/subformulae_mistcf_top1/
+# downloaded / produced locally
+data/canopus/
+results/
+train_results/
+outputs/
+multirun/
+lightning_logs/
+wandb/
+__pycache__/
+*.pyc
+*.egg-info/

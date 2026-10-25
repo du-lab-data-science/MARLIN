@@ -1,0 +1,24 @@
+# Top-level requirements of the main environment; requirements-lock.txt pins the exact versions.
+# MCES uses the open-source HiGHS solver; GUROBI (optional) needs `pip install gurobipy` and a license.
+torch==2.6.0
+lightning==2.5.1
+transformers==4.38.2       # newer versions break `import safe`
+safe-mol==0.1.13
+rdkit==2026.3.2
+datasets==2.18.0
+huggingface-hub==0.36.2
+hydra-core==1.3.2
+omegaconf==2.3.0
+numpy==1.26.4
+pandas==2.1.0
+h5py==3.16.0
+pyarrow==24.0.0
+aiohttp==3.13.5            # aiohttp 3.14 fails to import on Python 3.10 without async-timeout
+async-timeout==5.0.1
+tqdm
+pyyaml
+wandb==0.13.5
+setuptools==80.10.2        # wandb 0.13 imports pkg_resources (removed in newer setuptools)
+myopic-mces==1.0.1
+pulp==2.8.0
+highspy==1.13.1
